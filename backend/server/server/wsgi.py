@@ -16,21 +16,21 @@ try:
     # Random Forest classifier
     rf = RandomForestClassifier()
     # add to ML registry
-    registry.add_algorithm(endpoint_name="income_classifier",
+    registry.add_algorithm(endpoint_name="classifier",
                             algorithm_object=rf,
                             algorithm_name="random forest",
                             algorithm_status="production",
-                            algorithm_version="0.0.1",
+                            algorithm_version="0.0.2",
                             owner="Arshad",
                             algorithm_description="Random Forest with simple pre- and post-processing",
                             algorithm_code=inspect.getsource(RandomForestClassifier))
 
     et = ExtraTreeClassifier()
     # add to ML registry
-    registry.add_algorithm(endpoint_name="income_classifier",
+    registry.add_algorithm(endpoint_name="classifier",
                             algorithm_object=et,
                             algorithm_name="extra trees",
-                            algorithm_status="production",
+                            algorithm_status="testing",
                             algorithm_version="0.0.1",
                             owner="Arshad",
                             algorithm_description="Extra Trees with simple pre- and post-processing",
@@ -38,7 +38,7 @@ try:
     
     dt = DecisionTreeClassifier()
     # add to ML registry
-    registry.add_algorithm(endpoint_name="income_classifier",
+    registry.add_algorithm(endpoint_name="classifier",
                             algorithm_object=dt,
                             algorithm_name="decision tree",
                             algorithm_status="testing",
