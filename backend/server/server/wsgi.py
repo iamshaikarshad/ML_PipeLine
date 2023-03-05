@@ -20,7 +20,7 @@ try:
                             algorithm_object=rf,
                             algorithm_name="random forest",
                             algorithm_status="production",
-                            algorithm_version="0.0.3",
+                            algorithm_version="1.0.2",
                             owner="Arshad",
                             algorithm_description="Random Forest with simple pre- and post-processing",
                             algorithm_code=inspect.getsource(RandomForestClassifier))

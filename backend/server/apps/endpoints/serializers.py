@@ -73,3 +73,6 @@ class ABTestSerializer(serializers.ModelSerializer):
             "parent_mlalgorithm_1",
             "parent_mlalgorithm_2",
             )
+
+class FileSerializer(serializers.Serializer):
+    file = serializers.FileField()

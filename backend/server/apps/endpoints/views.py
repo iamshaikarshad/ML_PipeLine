@@ -1,11 +1,11 @@
-from rest_framework import viewsets
-from rest_framework import mixins
 import json
 from numpy.random import rand
 from rest_framework import views, status
 from rest_framework.response import Response
 from apps.ml.registry import MLRegistry
 from server.wsgi import registry
+from rest_framework import mixins, viewsets
+from xlrd import open_workbook
 
 from apps.endpoints.models import Endpoint
 from apps.endpoints.serializers import EndpointSerializer
@@ -22,6 +22,8 @@ from apps.endpoints.serializers import MLRequestSerializer
 from django.db import transaction
 from apps.endpoints.models import ABTest
 from apps.endpoints.serializers import ABTestSerializer
+
+from apps.endpoints.serializers import FileSerializer
 
 from django.db.models import F
 import datetime
@@ -79,6 +81,8 @@ class PredictView(views.APIView):
         algorithm_status = self.request.query_params.get("status", "testing")
         algorithm_version = self.request.query_params.get("version")
         print(algorithm_version)
+        print(endpoint_name)
+        print(algorithm_status)
         algs = MLAlgorithm.objects.filter(parent_endpoint__name = endpoint_name, status__status = algorithm_status, status__active=True)
 
         if algorithm_version is not None:
@@ -202,3 +206,39 @@ class StopABTestView(views.APIView):
                             status=status.HTTP_400_BAD_REQUEST
             )
         return Response({"message": "AB Test finished.", "summary": summary})
+    
+
+import pandas as pd
+
+class BatchPredictionViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = FileSerializer
+    queryset = MLRequest.objects.all()
+    def create(self, request):
+        # Load the uploaded file into a Pandas DataFrame
+        file = request.FILES['file']
+        df = pd.read_csv(file)
+        X = df.drop(columns = ['AccountRef1','C0RPRODUCTNAME','IsRetained','ThankYou','Confirm','EONPAYMENTMETHOD','SwitchedTariff_RankFiltered','SelectedTariff_HasRewardScheme','SelectedTariff_HasWinterPremium'])
+        algs = MLAlgorithm.objects.filter(parent_endpoint__name = "classifier", status__status = "production", version = "1.0.2",status__active=True)
+        alg_index = 0
+        algorithm_object = registry.endpoints[algs[alg_index].id]
+        results = []
+        check = len(df)
+        X = X.fillna(0)
+        for data in range(1,check):
+            x = X[data-1:data]
+            x = x.fillna(0)
+            predictions = algorithm_object.compute_prediction(x)
+            prediction_obj = MLRequest.objects.create(
+                input_data=x, 
+                full_response=predictions,
+                response=predictions["label"],
+                feedback="",
+                parent_mlalgorithm=algs[alg_index],
+            )
+            results.append({
+                'id': prediction_obj.id,
+                'prediction': predictions,
+            })
+        return Response(results, status=status.HTTP_201_CREATED)
+      
+    

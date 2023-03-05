@@ -10,7 +10,7 @@ class RandomForestClassifier:
 
     def preprocessing(self, input_data):
         # JSON to pandas DataFrame
-        input_data = pd.DataFrame(input_data, index=[0])
+        input_data = pd.DataFrame(input_data)
         # fill missing values
         input_data.fillna(self.values_fill_missing)
         # convert categoricals
@@ -30,12 +30,13 @@ class RandomForestClassifier:
         return input_data
 
     def predict(self, input_data):
+        print(self.model.predict(input_data))
         return self.model.predict_proba(input_data)
 
     def postprocessing(self, input_data):
-        label = "<=50K"
+        label = "0"
         if input_data[1] > 0.5:
-            label = ">50K"
+            label = "1"
         return {"probability": input_data[1], "label": label, "status": "OK"}
 
     def compute_prediction(self, input_data):
